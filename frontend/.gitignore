@@ -1,0 +1,59 @@
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# Node modules and dependencies
+node_modules/
+package-lock.json
+
+# Expo files and builds
+.expo/
+.expo-shared/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native keys and provisioning files
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro bundler cache
+.metro-health-check*
+
+# Debug files
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS system files
+.DS_Store
+*.pem
+
+# Local environment files
+.env*.local
+.env
+
+# TypeScript build cache
+*.tsbuildinfo
+
+# Models directory (if not used in frontend)
+models/
+
+# Logs and temporary files
+*.log
+*.temp
+*.tmp
+
+# IDE and editor-specific files
+.vscode/
+.idea/
+*.swp
+*~
+*.sublime-project
+*.sublime-workspace
+
+# Miscellaneous
+Thumbs.db  # Windows thumbnail cache files
+*.bak      # Backup files
