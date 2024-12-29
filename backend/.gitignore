@@ -1,6 +1,34 @@
-backend/models/balanced_resnet50_eczema_model.h5
+# Ignore Python virtual environments
+env/
+*.pyc
+__pycache__/
+
+# Ignore machine learning models and large files
+models/
+backend/models/
+*.h5
+
+# Ignore system-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore TensorFlow and large dependencies
 backend/env/Lib/site-packages/tensorflow/python/_pywrap_tensorflow_internal.pyd
 backend/env/Lib/site-packages/clang/native/libclang.dll
-backend/models/
-models/
-env/
+
+# Ignore Firebase configuration files
+backend/eczema-pro-firebase-adminsdk-*.json
+
+# Ignore IDE/editor-specific files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Ignore logs and temporary files
+*.log
+*.tmp
+
+# Ignore environment configuration files
+*.env
+
