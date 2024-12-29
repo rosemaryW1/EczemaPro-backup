@@ -32,3 +32,4 @@ backend/eczema-pro-firebase-adminsdk-*.json
 # Ignore environment configuration files
 *.env
 
+.vercel
