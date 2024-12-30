@@ -78,7 +78,7 @@ const Capture = () => {
         });
       }
 
-      const response = await axios.post('https://de3f-41-90-172-108.ngrok-free.app/upload-image/', formData, {
+      const response = await axios.post('https://454c-41-90-172-108.ngrok-free.app/upload-image/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'ngrok-skip-browser-warning': 'true',
