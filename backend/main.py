@@ -114,6 +114,10 @@ async def upload_image(file: UploadFile = File(...)):
     except Exception as e:
         return {"error": str(e)}
 
+print("vercel")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+    
