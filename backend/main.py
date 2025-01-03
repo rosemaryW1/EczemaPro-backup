@@ -22,7 +22,7 @@ AWS_REGION = os.getenv("AWS_REGION")
 # print(AWS_ACCESS_KEY, AWS_SECRET_KEY)
 
 # Path to the model
-MODEL_PATH = "models/custom_cnn_eczema_model.h5"
+MODEL_PATH = "models/custom_cnn_eczema_model_v2.h5"
 
 # Load the model
 model = load_model(MODEL_PATH)
