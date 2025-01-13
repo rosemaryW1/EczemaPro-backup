@@ -1,16 +1,124 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Modal, Share } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Modal, Share, Platform, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome5 } from '@expo/vector-icons';
 import TaskBar from '../components/TaskBar';
 import UpperTaskBar from '../components/UpperTaskBar';
 import CustomButton from '../components/CustomButton';
-import * as Sharing from 'expo-sharing';
+import Toast from 'react-native-toast-message';
 import * as FileSystem from 'expo-file-system';
-import { FontAwesome5 } from '@expo/vector-icons';
 
 const Results = ({ route, navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
-  const { imageUrl, result, confidence } = route.params || {};
+  const { imageUrl, result, confidence, capturedImageUri } = route.params || {};
+
+  // Generate message with image URL
+  const generateMessage = () => {
+    return `
+Eczema Pro Analysis Results:
+Prediction: ${result}
+Confidence: ${confidence}%
+Image: ${imageUrl || capturedImageUri}
+    `.trim();
+  };
+
+  // Sharing to WhatsApp
+  async function shareToWhatsApp() {
+    try {
+      const message = generateMessage();
+      const url = `whatsapp://send?text=${encodeURIComponent(message)}`;
+      if (Platform.OS === 'web') {
+        window.open(url, '_blank');
+      } else {
+        await Share.share({ message });
+      }
+      Toast.show({
+        type: 'success',
+        text1: 'Results Shared',
+        text2: 'Your results have been shared to WhatsApp.',
+      });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to share results to WhatsApp.',
+      });
+    }
+    setModalVisible(false);
+  }
+
+  // Sharing via Email
+  async function shareViaEmail() {
+    try {
+      const message = generateMessage();
+      const mailto = `mailto:?subject=Eczema Analysis Results&body=${encodeURIComponent(message)}`;
+      if (Platform.OS === 'web') {
+        window.open(mailto, '_blank');
+      } else {
+        await Share.share({ message });
+      }
+      Toast.show({
+        type: 'success',
+        text1: 'Results Shared',
+        text2: 'Your results have been shared via Email.',
+      });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to share results via Email.',
+      });
+    }
+    setModalVisible(false);
+  }
+
+  // Download Results
+  async function downloadResults() {
+    try {
+      if (Platform.OS === 'web') {
+        if (imageUrl || capturedImageUri) {
+          const response = await fetch(imageUrl || capturedImageUri);
+          const blob = await response.blob();
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = 'eczema-result.jpg';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          Toast.show({
+            type: 'success',
+            text1: 'Download Complete',
+            text2: 'Results downloaded successfully.',
+          });
+        } else {
+          Toast.show({
+            type: 'error',
+            text1: 'Download Failed',
+            text2: 'No results to download.',
+          });
+        }
+      } else {
+        if (imageUrl || capturedImageUri) {
+          const fileUri = FileSystem.documentDirectory + 'eczema-result.jpg';
+          await FileSystem.downloadAsync(imageUrl || capturedImageUri, fileUri);
+          Alert.alert('Download Complete', `Image downloaded to: ${fileUri}`);
+        } else {
+          Toast.show({
+            type: 'error',
+            text1: 'Download Failed',
+            text2: 'No results to download.',
+          });
+        }
+      }
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to download results.',
+      });
+    }
+    setModalVisible(false);
+  }
 
   const shareOptions = [
     {
@@ -45,59 +153,14 @@ const Results = ({ route, navigation }) => {
     },
   ];
 
-  async function shareToWhatsApp() {
-    try {
-      const message = `Check out my skin analysis results from Eczema Pro! ${result} (${confidence}% confidence)`;
-      await Share.share({
-        message,
-        url: imageUrl, // iOS only
-      });
-    } catch (error) {
-      alert('Error sharing to WhatsApp');
-    }
-    setModalVisible(false);
-  }
-
-  async function shareViaEmail() {
-    try {
-      const message = `Here are my skin analysis results from Eczema Pro: ${result} (${confidence}% confidence).`;
-      await Share.share({
-        message,
-        url: imageUrl, // iOS only
-      });
-    } catch (error) {
-      alert('Error sharing via email');
-    }
-    setModalVisible(false);
-  }
-
-  async function downloadResults() {
-    try {
-      if (imageUrl) {
-        const uri = FileSystem.documentDirectory + 'eczema-result.jpg';
-        const downloadedFile = await FileSystem.downloadAsync(imageUrl, uri);
-        alert('Results downloaded successfully to ' + downloadedFile.uri);
-      } else {
-        alert('No results to download.');
-      }
-    } catch (error) {
-      alert('Error downloading results');
-    }
-    setModalVisible(false);
-  }
-
   return (
     <View style={styles.container}>
       <UpperTaskBar />
-
       <View style={styles.content}>
         <Text style={styles.title}>Analysis Results</Text>
 
-        {imageUrl && (
-          <Image
-            source={{ uri: imageUrl }}
-            style={styles.analyzedImage}
-          />
+        {capturedImageUri && (
+          <Image source={{ uri: capturedImageUri }} style={styles.analyzedImage} />
         )}
 
         <View style={styles.resultBox}>
@@ -162,6 +225,7 @@ const Results = ({ route, navigation }) => {
       </Modal>
 
       <TaskBar />
+      <Toast />
     </View>
   );
 };

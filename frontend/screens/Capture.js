@@ -78,7 +78,7 @@ const Capture = () => {
         });
       }
 
-      const response = await axios.post('https://f865-41-90-172-12.ngrok-free.app/upload-image/', formData, {
+      const response = await axios.post('https://3026-41-90-172-250.ngrok-free.app/upload-image/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'ngrok-skip-browser-warning': 'true',
@@ -86,7 +86,7 @@ const Capture = () => {
       });
 
       const { url, prediction } = response.data || {};
-      setUploadedUrl(url); // Save the uploaded URL
+      setUploadedUrl(url); 
 
       const confidence = prediction?.[0]?.[0] ?? 0;
       const result = confidence > 0.5 ? 'Eczema Detected' : 'No Eczema Detected';
@@ -97,7 +97,12 @@ const Capture = () => {
         text2: 'Image uploaded and analyzed successfully!',
       });
 
-      navigation.navigate('Results', { imageUrl: url, result, confidence: (confidence * 100).toFixed(2) });
+      navigation.navigate('Results', { 
+        imageUrl: url, 
+        result, 
+        confidence: (confidence * 100).toFixed(2), 
+        capturedImageUri: imageUri
+      });
     } catch (error) {
       console.error('Upload failed:', error);
 
@@ -107,7 +112,7 @@ const Capture = () => {
         text2: 'Unable to upload the image. Please try again.',
       });
     } finally {
-      setUploading(false); // Reset uploading state
+      setUploading(false); // Reset uploading state Rosemaryyyy
     }
   };
 
@@ -118,7 +123,7 @@ const Capture = () => {
           type="file"
           id="file-input"
           accept="image/jpeg, image/png"
-          style={{ display: 'none' }} // Hide the file input
+          style={{ display: 'none' }} 
           ref={fileInputRef}
           onChange={handleFileChange}
         />
