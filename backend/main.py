@@ -15,14 +15,14 @@ app = FastAPI()
 
 # AWS S3 Configuration
 AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY")
-AWS_SECRET_KEY = os.getenv("SECRET_KEY")
+AWS_SECRET_KEY = os.getenv("AWS_SECRET_KEY")
 AWS_BUCKET_NAME = os.getenv("AWS_BUCKET_NAME")
 AWS_REGION = os.getenv("AWS_REGION")
 
 # print(AWS_ACCESS_KEY, AWS_SECRET_KEY)
 
 # Path to the model
-MODEL_PATH = "models/custom_cnn_eczema_model.h5"
+MODEL_PATH = "models/balanced_resnet50_eczema_model.h5"
 
 # Load the model
 model = load_model(MODEL_PATH)
@@ -31,16 +31,15 @@ print("Model loaded successfully")
 
 def predict_image(file_path):
     try:
-        # Load the image with target size for the model
-        image = load_img(file_path, target_size=(224, 224))  # Adjust size if required by the model
+        # Loading the image with target size for the model
+        image = load_img(file_path, target_size=(224, 224)) 
         image = img_to_array(image)
         image = np.expand_dims(image, axis=0)
-        image = image / 255.0  # Normalize pixel values
+        image = image / 255.0 
 
-        # Make prediction
+        # Making the prediction
         predictions = model.predict(image)
 
-        # Convert predictions to a JSON-serializable format
         if hasattr(predictions, "tolist"):
             predictions = predictions.tolist()
 
@@ -50,18 +49,18 @@ def predict_image(file_path):
         return {"error": f"Prediction failed: {str(e)}"}
 
 
-# Initialize S3 Client
+# S3 Client
 s3_client = boto3.client(
     "s3",
     aws_access_key_id=AWS_ACCESS_KEY,
-    aws_secret_access_key=SECRET_KEY,
+    aws_secret_access_key=AWS_SECRET_KEY,
     region_name=AWS_REGION,
 )
 
 # CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Replace "*" with specific origins for production
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -70,29 +69,23 @@ app.add_middleware(
 @app.post("/upload-image/")
 async def upload_image(file: UploadFile = File(...)):
     try:
-        # Debugging: Log received file details
+        
         print(f"Received file: {file.filename}, Content type: {file.content_type}")
-
-        # Validate file type
+      
         if file.content_type not in ["image/jpeg", "image/png"]:
             return {"error": "Invalid file type. Only JPEG and PNG are allowed."}
 
-        # Generate a unique filename
         local_file_name = f"temp_{uuid.uuid4()}.jpg"
         file_key = f"images/{uuid.uuid4()}.jpg"
 
-        # Save file locally for prediction
         with open(local_file_name, "wb") as temp_file:
             temp_file.write(file.file.read())
 
-        # Perform prediction
         prediction = predict_image(local_file_name)
 
-        # Remove local file after prediction
         os.remove(local_file_name)
 
-        # Upload to S3 (without ACL)
-        file.file.seek(0)  # Reset file pointer for upload
+        file.file.seek(0)  
         s3_client.upload_fileobj(
             file.file,
             AWS_BUCKET_NAME,
@@ -100,7 +93,7 @@ async def upload_image(file: UploadFile = File(...)):
             ExtraArgs={"ContentType": file.content_type},
         )
 
-        # Generate the public URL
+        # the public URL
         public_url = f"https://{AWS_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{file_key}"
 
         return {"success": True, "url": public_url, "prediction": prediction}
@@ -113,8 +106,7 @@ async def upload_image(file: UploadFile = File(...)):
 
     except Exception as e:
         return {"error": str(e)}
-
-print("vercel")
+        
 
 if __name__ == "__main__":
     import uvicorn
